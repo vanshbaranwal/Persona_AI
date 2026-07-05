@@ -22,7 +22,9 @@ const client = new OpenAI({
 
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "https://persona-ai-nu-teal.vercel.app"
+}))
 app.use(express.json());
 
 app.get("/api/health", (req, res) => {
