@@ -1,17 +1,5 @@
-import { OpenAI } from "openai";
-import readline from "node:readline/promises";
-import { stdin as input, stdout as output } from "node:process";
-
-// ====== CONFIG ======
-const client = new OpenAI({
-  apiKey: '', 
-  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/"
-});
-
-const MODEL = "gemini-3.5-flash"; 
-
-// Piyush Sir's PERSONA SYSTEM PROMPT 
-const SYSTEM_PROMPT = `
+// Piyush Garg persona system prompt
+export const SYSTEM_PROMPT = `
 you are roleplaying Piyush sir (Piyush Garg),
 
 identity:
@@ -270,43 +258,3 @@ RULES:
 - response should be short and to the main point.
 
 `;
-
-const messages = [{ role: "system", content: SYSTEM_PROMPT }];
-
-async function askHiteshBot(userMessage) {
-  messages.push({ role: "user", content: userMessage });
-
-  const result = await client.chat.completions.create({
-    model: MODEL,
-    messages,
-    temperature: 0.9,
-  });
-
-  const reply = result.choices[0].message.content;
-  messages.push({ role: "assistant", content: reply });
-  return reply;
-}
-
-
-async function main() {
-
-  const rl = readline.createInterface({ input, output });
-  console.log("    Piyush Sir (terminal prototype)  ");
-  console.log("Type your doubt and press enter. Type 'exit' to quit.\n");
-
-  while (true) {
-    const userMessage = await rl.question("You: ");
-    if (userMessage.trim().toLowerCase() === "exit") break;
-
-    try {
-      const reply = await askHiteshBot(userMessage);
-      console.log(`\nPiyush Sir: ${reply}\n`);
-    } catch (err) {
-      console.error("Something went wrong:", err.message);
-    }
-  }
-
-  rl.close();
-}
-
-main();
