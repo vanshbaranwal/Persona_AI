@@ -6,7 +6,7 @@ import { getPersona } from "./personas/index.js";
 
 
 const PORT = process.env.PORT || 3000;
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.5-flash";
 
 if (!process.env.GEMINI_API_KEY) {
   console.error(
