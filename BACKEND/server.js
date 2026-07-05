@@ -6,7 +6,7 @@ import { getPersona } from "./personas/index.js";
 
 
 const PORT = process.env.PORT || 3000;
-const MODEL = "gemini-3.5-flash"; 
+const MODEL = "gemini-2.5-flash";
 
 if (!process.env.GEMINI_API_KEY) {
   console.error(
@@ -22,9 +22,8 @@ const client = new OpenAI({
 
 
 const app = express();
-app.use(cors()); 
+app.use(cors());
 app.use(express.json());
-
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
@@ -34,8 +33,8 @@ app.get("/api/health", (req, res) => {
  * POST /api/chat
  * body: {
  *   persona: "hitesh" | "piyush",
- *   message: string,                       // the new user message
- *   history?: { role: "user"|"assistant", content: string }[]  // prior turns, optional
+ *   message: string,
+ *   history?: { role: "user"|"assistant", content: string }[]
  * }
  * response: { reply: string }
  */
@@ -55,7 +54,6 @@ app.post("/api/chat", async (req, res) => {
         error: `Unknown persona '${personaId}'. Valid options: hitesh, piyush.`,
       });
     }
-
 
     const messages = [
       { role: "system", content: persona.systemPrompt },
@@ -83,6 +81,7 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Persona chat backend running at http://localhost:${PORT}`);
 });
