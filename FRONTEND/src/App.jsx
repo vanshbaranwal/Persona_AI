@@ -8,7 +8,7 @@ import { personas, getPersona } from './data/personas.js'
 let idCounter = 0
 const nextId = () => (idCounter += 1)
 
-const API_URL = 'https://persona-ai-fxev.onrender.com'
+const API_URL = 'https://persona-ai-fxev.onrender.com/api/chat'
 
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light')
