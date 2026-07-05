@@ -8,6 +8,8 @@ import { personas, getPersona } from './data/personas.js'
 let idCounter = 0
 const nextId = () => (idCounter += 1)
 
+const API_URL = 'http://localhost:3000/api/chat'
+
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light')
   const [activeId, setActiveId] = useState(personas[0].id)
@@ -16,6 +18,7 @@ export default function App() {
     hitesh: [],
     piyush: [],
   })
+  const [isSending, setIsSending] = useState(false)
 
   const persona = getPersona(activeId)
   const messages = conversations[activeId]
@@ -25,28 +28,61 @@ export default function App() {
     localStorage.setItem('theme', theme)
   }, [theme])
 
-  const handleSend = (text) => {
+  const handleSend = async (text) => {
     const userMessage = { id: nextId(), role: 'user', content: text }
+
+    // capture the persona this message belongs to, and the history
+    // *before* this new message was added (server appends it itself)
+    const targetPersona = activeId
+    const historyForRequest = conversations[targetPersona].map((m) => ({
+      role: m.role,
+      content: m.content,
+    }))
 
     setConversations((prev) => ({
       ...prev,
-      [activeId]: [...prev[activeId], userMessage],
+      [targetPersona]: [...prev[targetPersona], userMessage],
     }))
 
-    // Placeholder reply — swap this out for a real LLM API call.
-    // e.g. call your backend with { persona: activeId, message: text }
-    // and stream/return the model's response here.
-    setTimeout(() => {
-      const reply = {
+    setIsSending(true)
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          persona: targetPersona,
+          message: text,
+          history: historyForRequest,
+        }),
+      })
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}))
+        throw new Error(errBody.error || `Request failed (${res.status})`)
+      }
+
+      const data = await res.json()
+
+      const reply = { id: nextId(), role: 'assistant', content: data.reply }
+      setConversations((prev) => ({
+        ...prev,
+        [targetPersona]: [...prev[targetPersona], reply],
+      }))
+    } catch (err) {
+      console.error('Chat request failed:', err)
+      const errorReply = {
         id: nextId(),
         role: 'assistant',
-        content: `(${persona.name}'s response will appear here once the LLM backend is connected.)`,
+        content: 'Something went wrong reaching the server. Is the backend running on port 3000?',
       }
       setConversations((prev) => ({
         ...prev,
-        [activeId]: [...prev[activeId], reply],
+        [targetPersona]: [...prev[targetPersona], errorReply],
       }))
-    }, 400)
+    } finally {
+      setIsSending(false)
+    }
   }
 
   const handleNewChat = () => {
@@ -63,7 +99,12 @@ export default function App() {
           <ThemeDropdown theme={theme} onChange={setTheme} />
         </header>
 
-        <ChatWindow persona={persona} messages={messages} onSend={handleSend} />
+        <ChatWindow
+          persona={persona}
+          messages={messages}
+          onSend={handleSend}
+          isSending={isSending}
+        />
       </div>
     </div>
   )

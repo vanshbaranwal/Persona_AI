@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import PersonaAvatar from './PersonaAvatar.jsx'
 
-export default function ChatWindow({ persona, messages, onSend }) {
+export default function ChatWindow({ persona, messages, onSend, isSending }) {
   const [input, setInput] = useState('')
   const scrollRef = useRef(null)
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
-  }, [messages])
+  }, [messages, isSending])
 
   const submit = () => {
     const text = input.trim()
@@ -53,6 +53,17 @@ export default function ChatWindow({ persona, messages, onSend }) {
                 </div>
               </div>
             ))}
+
+            {isSending && (
+              <div className="message-row row-assistant">
+                <PersonaAvatar persona={persona} size={28} />
+                <div className="bubble bubble-assistant typing-bubble">
+                  <span className="typing-dot" />
+                  <span className="typing-dot" />
+                  <span className="typing-dot" />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
